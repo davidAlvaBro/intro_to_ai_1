@@ -1,0 +1,1 @@
+# Contains a game instance (board + visual representation)
