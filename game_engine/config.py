@@ -8,3 +8,5 @@ class Player(Enum):
     BLUE = 1
     RED = 2
     NONE = 0
+    
+# TODO Have laser position in here 
