@@ -2,25 +2,6 @@
 from enum import Enum
 from pieces import Piece
 import config
-
-class Move(Enum):
-    UP = (0,-1)
-    RIGHT = (1, 0)
-    DOWN = (0, 1)
-    LEFT = (-1, 0)
-    RIGHT_UP = (1, -1)
-    RIGHT_DOWN = (1, 1)
-    LEFT_DOWN = (-1, 1)
-    LEFT_UP = (-1, -1)
-    
-class Rotate(Enum):
-    LEFT = 0
-    RIGHT = 1
-    
-class Player(Enum):
-    NONE = 0
-    BLUE = 1 
-    RED = 2 
  
 
 class Board():
@@ -28,7 +9,7 @@ class Board():
     
     class Field():
         # Contains Reserved state, Peice or None 
-        def __init__(self, contents=None, reserved=Player.NONE) -> None:
+        def __init__(self, contents=None, reserved=config.Player.NONE) -> None:
             self.contents = contents # contains a Piece or nothing 
             self.reserved = reserved # Contains elements from the Enum Reserved 
     
@@ -41,8 +22,8 @@ class Board():
         # Make initial position
             # Generate pieces and fields 
         
-        self.turn = Player.BLUE
-        self.won = Player.NONE 
+        self.turn = config.Player.BLUE
+        self.won = config.Player.NONE 
     
 
 

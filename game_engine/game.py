@@ -1,8 +1,8 @@
 # Contains a game instance (board + visual representation)
 import board as b
+import config 
 # TODO import GUI
-# TODO fix that board usually means board.board... (always when board[], but not else)
-# TODO fix enums in general 
+# TODO fix enums in general - Rule of thumb things that can be stored as enums are stored as enums (then we can use methods for said enums)
 
 # Function that adds coordinates together 
 def sum_coordinates(coord1, coord2) -> tuple:
@@ -12,20 +12,20 @@ def sum_coordinates(coord1, coord2) -> tuple:
 # Function that checks if a move is legal 
 def is_legal_action(board, position, rotate='No', direction='No') -> bool:
         illegal_move = False 
-        if not position in board.keys(): 
+        if not position in board.board.keys(): 
             illegal_move = True # If the position is not on the board you can't move from there
-        elif board[position].contents != None: # If there is no piece in the position you can't move from there
-            if board[position].contents.player != board.turn:
+        elif board.board[position].contents != None: # If there is no piece in the position you can't move from there
+            if board.board[position].contents.player != board.turn:
                 illegal_move = True # You cannot move the opponents pieces 
             elif rotate != 'No':
                 if direction != 'No': 
                     illegal_move = True # Only way rotation can go wrong is if the player tries both 
             
             elif direction != 'No': # Check if the destination is legal 
-                destination = board[sum_coordinates(position, direction)] 
-                if board[position].piece == "Laser":
+                destination = board.board[sum_coordinates(position, direction.value)] 
+                if board.board[position].piece == "Laser":
                     illegal_move = True # You cannot move "laser" to another location 
-                elif not destination in board.keys(): 
+                elif not destination in board.board.keys(): 
                     illegal_move = True # You are moving out of the board 
                 elif destination.contents != None: 
                     illegal_move = True # You are moving onto another piece (this ain't chess)
@@ -40,37 +40,37 @@ def is_legal_action(board, position, rotate='No', direction='No') -> bool:
 def action(board, position, rotate='No', direction='No'):
     # Take the action given and return board 
     if rotate != 'No': 
-        if rotate == Rotate.RIGHT: # turning right adds 1 to the position (see table Move)
-            board[position].contents.orientation = (board[position].contents.orientation + 1) % 4
-        elif rotate == Rotate.LEFT:
-            board[position].contents.orientation = (board[position].contents.orientation - 1) % 4
+        if rotate == config.Rotate.RIGHT: # turning right adds 1 to the position (see table Move)
+            board.board[position].contents.orientation = (board.board[position].contents.orientation + 1) % 4
+        elif rotate == config.Rotate.LEFT:
+            board.board[position].contents.orientation = (board.board[position].contents.orientation - 1) % 4
     elif direction != 'No':
-        board[sum_coordinates(position, direction)].contents = board[position].contents
-        board[position] = None
+        board.board[sum_coordinates(position, direction)].contents = board.board[position].contents
+        board.board[position] = None
     return board 
         
 def fire_laser(board): 
     # returns the board after the laser has fired 
-    laser_position = config.laser[board.turn] # TODO Put this in config 
-    shooter = board[laser_position].contents
+    laser_position = config.laser_position[board.turn] # TODO Put this in config 
+    shooter = board.board[laser_position].contents
     laser = {"orientation": shooter.orientation, "position": shooter.position}
 
     while (True):
-        laser["position"] = laser["position"] + laser["orientation"] # TODO make this posible 
+        laser["position"] = sum_coordinates(laser["position"], laser["orientation"].toMove().value) 
         
-        if not laser["position"] in board.keys(): # Check if this new position is in the board 
+        if not laser["position"] in board.board.keys(): # Check if this new position is in the board 
             break 
         
-        piece = board[laser["position"]].contents
+        piece = board.board[laser["position"]].contents
         if piece != None: # Check if there is a piece 
             interaction = piece.laser_interaction(laser["orientation"]) 
             
-            if interaction == LaserOption.STOP: # If the laser stops break 
+            if interaction == config.LaserOptions.STOP: # If the laser stops break 
                 break 
-            elif interaction == LaserOption.DEAD: # If the laser kills the piece 
+            elif interaction == config.LaserOptions.DEAD: # If the laser kills the piece 
                 if piece.piece == "King": # if it is the king then the opposite player wins  
-                    board.won = not piece.player # TODO fix this 
-                board[laser["position"]].contents = None 
+                    board.won = piece.player.change_player() 
+                board.board[laser["position"]].contents = None 
                 break 
             else: 
                 laser["orientation"] = interaction # Hitting a mirror changes orientation
@@ -80,7 +80,7 @@ def fire_laser(board):
 
 def goal_test(board): 
     # Returns if the game is over who won and otherwise false
-    if board.won == Player.NONE: 
+    if board.won == config.Player.NONE: 
         return False 
     else: 
         return True

@@ -1,4 +1,5 @@
 from enum import Enum
+import config
 
 # Contains the classes of the pieces 
 
@@ -13,20 +14,6 @@ Switch: ⟋⟍⟋⟍
 King: M
 Reserved: ☉
 '''
-
-class Orientation(Enum):
-    UP = 0
-    RIGHT = 1
-    DOWN = 2
-    LEFT = 3
-
-class LaserOptions(Enum):
-    UP = 0
-    RIGHT = 1
-    DOWN = 2
-    LEFT = 3
-    DEAD = 4 
-    STOP = 5 
 
 class Piece():
     def __init__(self, orientation, position, player):
@@ -48,7 +35,7 @@ class King(Piece):
         self.piece = "King"
 
     def laser_interaction(self, laser_from_direction): # King dies when hit from all directions
-        return LaserOptions.DEAD
+        return config.LaserOptions.DEAD
         
 class Switch(Piece):
     def __init__(self, orientation, position, player):
@@ -57,10 +44,10 @@ class Switch(Piece):
         self.piece = "Switch"
 
     def laser_interaction(self, laser_from_direction): # Reflects incoming lasers from a to b and from c to d (and reversed)
-        self.a = (Orientation.DOWN.value + self.orientation ) % 4 
-        self.b = (Orientation.LEFT.value + self.orientation ) % 4
-        self.c = (Orientation.UP.value + self.orientation ) % 4
-        self.d = (Orientation.RIGHT.value + self.orientation ) % 4
+        self.a = (config.Orientation.DOWN.value + self.orientation ) % 4 
+        self.b = (config.Orientation.LEFT.value + self.orientation ) % 4
+        self.c = (config.Orientation.UP.value + self.orientation ) % 4
+        self.d = (config.Orientation.RIGHT.value + self.orientation ) % 4
         if laser_from_direction == self.a:
             return (self.b + 2) % 4
         elif laser_from_direction == self.b:
@@ -78,9 +65,9 @@ class Defender(Piece):
     
     def laser_interaction(self, laser_from_direction): # Stops when defender is orientated opposite of laser direction 
         if laser_from_direction == (self.orientation + 2) % 4:
-            return LaserOptions.STOP
+            return config.LaserOptions.STOP
         else:
-            return LaserOptions.DEAD
+            return config.LaserOptions.DEAD
 
 class Deflector(Piece):
     def __init__(self, orientation, position, player):
@@ -89,14 +76,14 @@ class Deflector(Piece):
         self.piece = "Deflector"
         
     def laser_interaction(self, laser_from_direction): # Reflects incoming lasers from a to b (and reversed)
-        self.a = (Orientation.DOWN.value + self.orientation ) % 4
-        self.b = (Orientation.LEFT.value + self.orientation ) % 4
+        self.a = (config.Orientation.DOWN.value + self.orientation ) % 4
+        self.b = (config.Orientation.LEFT.value + self.orientation ) % 4
         if laser_from_direction == self.a:
             return (self.b + 2) % 4
         elif laser_from_direction == self.b :
             return (self.a + 2) % 4 
         else:
-            return LaserOptions.DEAD
+            return config.LaserOptions.DEAD
 
 class Laser(Piece):
     def __init__(self, orientation, position, player):
@@ -105,7 +92,7 @@ class Laser(Piece):
         self.piece = "Laser"
     
     def laser_interaction(self, laser_from_direction): # Laser stops when hit from all directions
-        return LaserOptions.STOP
+        return config.LaserOptions.STOP
     
 if __name__ == "__main__":
     pass
