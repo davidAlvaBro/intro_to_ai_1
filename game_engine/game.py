@@ -106,9 +106,21 @@ if __name__ == "__main__":
     while (not over): 
         # TODO Ask GUI to print board 
         visual_representation.print_board(board)
-        
-        # TODO Ask GUI to return action (in the format of enums)
-        (position, rotate, direction) = None 
+        valid_action = False
+        action = ""
+        rotate = ""
+        direction = ""
+        position = ""
+        # TODO Perform test of when action is valid (probably test that above variables aren't empty string)
+        while not valid_action:
+            action = input("Pick your action [Rotate, Move]: ")
+            match action:
+                case "Rotate":
+                    position, rotate = input("Pick your piece to rotate and rotation direction [Left or Right]: ").split()
+                case "Move":
+                    position, direction = input("Pick your piece and direction to move [Up, Right, Down, Left, Right-Up, Right-Down, Left-Up, Left-Down]: ").split()
+                case _:
+                    print("Unknown action, try again...")
 
         # Check if the action is legal 
         is_legal = is_legal_action(board, position, rotate, direction)
