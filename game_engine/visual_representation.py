@@ -6,10 +6,7 @@ import pieces
 
 
 def print_board(board):
-    print(" ", end=" ")
-    for x in range(0, config.WIDTH):
-        print("x", end=" ")
-    print()
+    print("  A B C D E F G H I J")
     for y in range(0, config.HEIGHT):
         print(y+1, end=" ")
         for x in range(0, config.WIDTH):
