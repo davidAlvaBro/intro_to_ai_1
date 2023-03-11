@@ -1,6 +1,7 @@
 # Contains a game instance (board + visual representation)
 import board as b
 import config 
+import visual_representation
 # TODO import GUI
 # TODO fix enums in general - Rule of thumb things that can be stored as enums are stored as enums (then we can use methods for said enums)
 
@@ -104,6 +105,7 @@ if __name__ == "__main__":
     
     while (not over): 
         # TODO Ask GUI to print board 
+        visual_representation.print_board(board)
         
         # TODO Ask GUI to return action (in the format of enums)
         (position, rotate, direction) = None 

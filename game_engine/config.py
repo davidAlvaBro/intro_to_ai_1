@@ -1,4 +1,7 @@
 from enum import Enum
+from colorama import init as colorama_init
+from colorama import Fore
+from colorama import Style
 
 WIDTH = 10
 HEIGHT = 8
@@ -69,6 +72,17 @@ class LaserOptions(Enum):
             raise ValueError("DUM NUMS")
 
 
+def print_blue(symbol):
+    print(f"{Fore.BLUE}{symbol}{Style.RESET_ALL}", end=" ")
+
+def print_red(symbol):
+    print(f"{Fore.RED}{symbol}{Style.RESET_ALL}", end=" ")
+
+def blue_piece(symbol):
+    return Fore.BLUE+symbol+Style.RESET_ALL
+
+def red_piece(symbol):
+    return Fore.RED+symbol+Style.RESET_ALL
     
 # TODO Have laser position in here 
 laser_position = (None, None)
