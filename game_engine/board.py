@@ -77,9 +77,107 @@ class Board():
         self.board[(5,0)].contents = pieces.King(ori.DOWN, (5,0), p.RED)
         self.board[(4,7)].contents = pieces.King(ori.UP, (4,7), p.BLUE)
         
-        
         self.turn = p.BLUE
         self.won = p.NONE 
+
+        # maintain a list of pieces for each player
+        # this is used when restoring the board to a previous state
+
+        self.red_pieces = []
+        self.blue_pieces = []
+
+        for x,y in self.board:
+            if self.board[(x,y)].contents != None:
+                if self.board[(x,y)].contents.player == p.RED:
+                    self.red_pieces.append(self.board[(x,y)].contents)
+                elif self.board[(x,y)].contents.player == p.BLUE:
+                    self.blue_pieces.append(self.board[(x,y)].contents)
+    
+    def kill_piece(self, piece: pieces.Piece):
+        """
+        kill a piece and remove it from the board
+           - but don't remove it from the list of pieces
+             as they are needed for restoring the board to 
+             earlier states
+        """
+        self.board[piece.position].contents = None
+        piece.kill()
+
+
+    def take_snapshot(self):
+        """
+        returns a snapshot of the board
+        a shapshot is a dictionary and it has the form:
+        
+        {
+            "red": [piece_snapshot, piece_snapshot, ...],
+            "blue": [piece_snapshot, piece_snapshot, ...]
+        }
+        
+        where piece_snapshot is the snapshot of a piece
+        for doc on piece snapshots, see pieces.py
+
+        """
+
+        snapshot = {"red": [], "blue": []}
+        for piece in self.red_pieces:
+            snapshot["red"].append(piece.take_snapshot())
+        for piece in self.blue_pieces:
+            snapshot["blue"].append(piece.take_snapshot())
+    
+        return snapshot
+    
+    def restore_from_snapshot(self, snapshot):
+        """
+        restores the board from a snapshot
+        see take_snapshot for doc on snapshots
+
+        """
+
+        def update_piece_and_board(piece: pieces.Piece, piece_snapshot):
+            """
+            helper function for restoring each piece from a snapshot
+            """
+            # get current position of piece
+            current_pos = piece.position
+            # if current position contains the current
+            # piece, remove it from that position
+            if self.board[current_pos].contents == piece:
+                self.board[current_pos].contents = None
+            # restore piece from snapshot and move
+            # it to its original (snapshot) position
+            # if the piece is alive
+            piece.restore_from_snapshot(piece_snapshot)
+            if piece.alive:
+                self.board[piece.position].contents = piece
+
+        # restore each piece from its snapshot
+        for i,piece_snapshot in enumerate(snapshot["red"]):
+            piece = self.red_pieces[i]
+            update_piece_and_board(piece, piece_snapshot)
+        
+        for i,piece_snapshot in enumerate(snapshot["blue"]):
+            piece = self.blue_pieces[i]
+            update_piece_and_board(piece, piece_snapshot)
+    
+    def get_legal_actions(self, position: tuple):
+        """
+        returns a list of legal actions for the current position
+        """
+        # TODO: implement this method
+        raise NotImplementedError
+        legal_actions = []
+        piece = self.board[position].contents
+        if piece is None:
+            return []
+        if piece.player != self.turn:
+            return []
+        if piece.alive:
+            if isinstance(piece, pieces.Laser):
+                legal_actions.append("rotate")
+        
+            
+        
     
 
 

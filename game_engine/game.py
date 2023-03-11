@@ -3,7 +3,9 @@ import board as b
 import config 
 import visual_representation
 # TODO import GUI
-# TODO fix enums in general - Rule of thumb things that can be stored as enums are stored as enums (then we can use methods for said enums)
+# TODO fix enums in general - Rule of thumb things
+#      that can be stored as enums are stored as
+#      enums (then we can use methods for said enums)
 
 # Function that adds coordinates together 
 def sum_coordinates(coord1, coord2) -> tuple:
@@ -40,14 +42,18 @@ def is_legal_action(board, position, rotate='No', direction='No') -> bool:
 
 def action(board, position, rotate='No', direction='No'):
     # Take the action given and return board 
+    piece = board.board[position].contents
     if rotate != 'No': 
         if rotate == config.Rotate.RIGHT: # turning right adds 1 to the position (see table Move)
-            board.board[position].contents.orientation = (board.board[position].contents.orientation + 1) % 4
+            piece.orientation = (piece.orientation + 1) % 4
         elif rotate == config.Rotate.LEFT:
-            board.board[position].contents.orientation = (board.board[position].contents.orientation - 1) % 4
+            piece.orientation = (piece.orientation - 1) % 4
+    # TODO: what type is direction? config.Move.Something or a tuple?
     elif direction != 'No':
-        board.board[sum_coordinates(position, direction)].contents = board.board[position].contents
-        board.board[position] = None
+        new_position = sum_coordinates(position, direction.value)
+        piece.position = new_position
+        board.board[new_position].contents = piece
+        board.board[position].contents = None
     return board 
         
 def fire_laser(board): 
@@ -71,7 +77,8 @@ def fire_laser(board):
             elif interaction == config.LaserOptions.DEAD: # If the laser kills the piece 
                 if piece.piece == "King": # if it is the king then the opposite player wins  
                     board.won = piece.player.change_player() 
-                board.board[laser["position"]].contents = None 
+                # board.board[laser["position"]].contents = None 
+                board.kill_piece(piece)
                 break 
             else: 
                 laser["orientation"] = interaction # Hitting a mirror changes orientation
@@ -107,6 +114,7 @@ if __name__ == "__main__":
         # TODO Ask GUI to print board 
         visual_representation.print_board(board)
         valid_action = False
+        # TODO: We already have a function called action!
         action = ""
         rotate = ""
         direction = ""

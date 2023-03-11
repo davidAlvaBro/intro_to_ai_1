@@ -22,6 +22,22 @@ class Piece():
         self.player = player
         self.symbols = None
         self.piece = None
+        self.alive = True
+    
+    def kill(self):
+        self.orientation = None
+        self.position = None
+        self.alive = False
+    
+    def take_snapshot(self):
+        return {"orientation": self.orientation,
+                "position": self.position,
+                "alive": self.alive}
+
+    def restore_from_snapshot(self, snapshot):
+        self.orientation = snapshot["orientation"]
+        self.position = snapshot["position"]
+        self.alive = snapshot["alive"]
 
     def __str__(self):
         if self.player == config.Player.RED:
@@ -30,31 +46,33 @@ class Piece():
             return config.blue_piece(self.symbols[self.orientation.value])
         else:
             return "ERROR: Unknown Player"
-    
+
     def laser_interaction(self, laser_from_direction):
         raise NotImplementedError
         # TODO laser interaction - overwritten in all pieces 
+    
+    def get_possible_actions(self, board):
+        raise NotImplementedError
+        # TODO get possible actions - overwritten in all pieces
 
 class King(Piece):
     def __init__(self, orientation, position, player):
         super().__init__(orientation=orientation, position=position, player=player)
         self.symbols = "MMMM"
         self.piece = "King"
-    
-    def __str__(self):
-        return super().__str__()
 
     def laser_interaction(self, laser_from_direction): # King dies when hit from all directions
         return config.LaserOptions.DEAD
+    
+    def get_possible_actions(self, board):
+        legal_actions = []
+        return legal_actions
         
 class Switch(Piece):
     def __init__(self, orientation, position, player):
         super().__init__(orientation=orientation, position=position, player=player)
         self.symbols = "⟋⟍⟋⟍"
         self.piece = "Switch"
-    
-    def __str__(self):
-        return super().__str__()
 
     def laser_interaction(self, laser_from_direction): # Reflects incoming lasers from a to b and from c to d (and reversed)
         self.a = (config.Orientation.DOWN.value + self.orientation ) % 4 
@@ -69,15 +87,16 @@ class Switch(Piece):
             return (self.d + 2) % 4
         elif laser_from_direction == self.d:
             return (self.c + 2) % 4
+    
+    def get_possible_actions(self, board):
+        legal_actions = []
+        return legal_actions
 
 class Defender(Piece):
     def __init__(self, orientation, position, player):
         super().__init__(orientation=orientation, position=position, player=player)
         self.symbols = "⊤⊣⊥⊢"
         self.piece = "Defender"
-
-    def __str__(self):
-        return super().__str__()
     
     def laser_interaction(self, laser_from_direction): # Stops when defender is orientated opposite of laser direction 
         if laser_from_direction == (self.orientation + 2) % 4:
@@ -90,9 +109,6 @@ class Deflector(Piece):
         super().__init__(orientation=orientation, position=position, player=player)
         self.symbols = "⌞⌜⌝⌟"
         self.piece = "Deflector"
-
-    def __str__(self):
-        return super().__str__()
         
     def laser_interaction(self, laser_from_direction): # Reflects incoming lasers from a to b (and reversed)
         self.a = (config.Orientation.DOWN.value + self.orientation ) % 4
@@ -109,9 +125,6 @@ class Laser(Piece):
         super().__init__(orientation=orientation, position=position, player=player)
         self.symbols = "ᕫᕮᕬᕭ"
         self.piece = "Laser"
-    
-    def __str__(self):
-        return super().__str__()
     
     def laser_interaction(self, laser_from_direction): # Laser stops when hit from all directions
         return config.LaserOptions.STOP
