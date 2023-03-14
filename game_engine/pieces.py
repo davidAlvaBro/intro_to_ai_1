@@ -30,10 +30,10 @@ class Piece():
         self.position = None
         self.alive = False
 
-    def rotate(self, rotate): # TODO remove? Is this ever used? 
-        if rotate == "left":
+    def rotate(self, rotate):
+        if rotate == config.Rotate['LEFT']:
             self.orientation = (self.orientation - 1) % 4
-        if rotate == "right": 
+        if rotate == config.Rotate['RIGHT']:
             self.orientation = (self.orientation + 1) % 4
     
     def take_snapshot(self):

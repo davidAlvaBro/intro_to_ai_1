@@ -10,7 +10,7 @@ class Board():
     
     class Field():
         # Contains Reserved state, Peice or None 
-        def __init__(self, contents=None, reserved=p.NONE) -> None:
+        def __init__(self, contents=None, reserved=p.NONE):
             self.contents = contents # contains a Piece or nothing 
             self.reserved = reserved # Contains elements from the Enum Reserved 
 
@@ -36,7 +36,7 @@ class Board():
             else:
                 return self.contents.__str__()
     
-    def __init__(self) -> None:
+    def __init__(self):
         # Define the dictionary 
         self.board = {} 
         for y in range(config.HEIGHT): 
@@ -191,24 +191,24 @@ def sum_coordinates(coord1, coord2) -> tuple:
         return tuple([sum(x) for x in zip(coord1, coord2)])
 
 # Function that checks if a move is legal 
-def is_legal_action(board, position, rotate='No', direction='No') -> bool:
+def is_legal_action(board, position, rotate=None, direction=None) -> bool:
         illegal_move = False 
         if not position in board.board.keys(): 
             illegal_move = True # If the position is not on the board you can't move from there
         elif board.board[position].contents != None: # If there is no piece in the position you can't move from there
             if board.board[position].contents.player != board.turn:
                 illegal_move = True # You cannot move the opponents pieces 
-            elif rotate != 'No':
-                if direction != 'No': 
-                    illegal_move = True # Only way rotation can go wrong is if the player tries both 
+            elif rotate is not None:
+                if direction is not None: 
+                    illegal_move = True # Only way rotation can go wrong is if the player tries both rotate and move
             
-            elif direction != 'No': # Check if the destination is legal 
+            elif direction is not None: # Check if the destination is legal 
                 destination = board.board[sum_coordinates(position, direction.value)] 
-                if board.board[position].piece == "Laser":
+                if board.board[position].contents.piece == "Laser":
                     illegal_move = True # You cannot move "laser" to another location 
                 elif not destination in board.board.keys(): 
                     illegal_move = True # You are moving out of the board 
-                elif destination.contents != None: 
+                elif destination.contents is not None: 
                     illegal_move = True # You are moving onto another piece (this ain't chess)
                 elif not (destination.reserved == board.turn or destination.reserved == None):
                     illegal_move = True # You can't move to your opponents reserved fields 
@@ -218,13 +218,13 @@ def is_legal_action(board, position, rotate='No', direction='No') -> bool:
         
         return illegal_move
 
-def action(board, position, rotate='No', direction='No'):
+def action(board, position, rotate=None, direction=None):
     # Take the action given and return board 
     piece = board.board[position].contents
-    if rotate != 'No': 
+    if rotate is not None: 
         piece.orientation.rotate(rotate) # turning right adds 1 to the position (see table Move)
-    elif direction != 'No':
-        new_position = sum_coordinates(position, config.Move[direction].value)
+    elif direction is not None:
+        new_position = sum_coordinates(position, direction.value)
         piece.position = new_position
         board.board[new_position].contents = piece
         board.board[position].contents = None
@@ -250,7 +250,7 @@ def fire_laser(board):
                 break 
             elif interaction == config.LaserOptions.DEAD: # If the laser kills the piece 
                 if piece.piece == "King": # if it is the king then the opposite player wins  
-                    board.won = piece.player.change_player() 
+                    board.won = piece.player.change_player()
                 # board.board[laser["position"]].contents = None 
                 board.kill_piece(piece)
                 break 
@@ -288,10 +288,10 @@ def get_legal_actions(board):
         if piece.alive:
             position = piece.position
             for i in config.Rotate:
-                if is_legal_action(board, position, rotate=config.Rotate[i], direction='No'):
-                    legal_actions.append((piece, config.Rotate[i]))
-            for i in ori:
-                if is_legal_action(board, position, rotate='no', direction=ori[i]):
-                    legal_actions.append((piece, ori[i]))
+                if is_legal_action(board, position, rotate=i, direction=None):
+                    legal_actions.append((piece, i))
+            for i in config.Move:
+                if is_legal_action(board, position, rotate=None, direction=i):
+                    legal_actions.append((piece, i))
     return legal_actions
     

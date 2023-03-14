@@ -13,8 +13,8 @@ class Player(Enum):
 
 WIDTH = 10
 HEIGHT = 8
-LASER_POSITION = {Player.BLUE: (0,0), 
-                  Player.RED: (WIDTH-1, HEIGHT-1)}
+LASER_POSITION = {Player.RED: (0,0), 
+                  Player.BLUE: (WIDTH-1, HEIGHT-1)}
 
 class Rotate(Enum):
     LEFT = 0

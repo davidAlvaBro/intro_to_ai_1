@@ -21,11 +21,10 @@ if __name__ == "__main__":
             
             over = b.goal_test(board) 
         else: 
-            # TODO call GUI "not_legal_action" that informs user that the action was illegal 
-            pass
+            gui.gui_illegal_action()
     
     # Now the game is over and we announce the winner 
-    # TODO call gui "announce_winner" with board.won as argument 
+    gui.gui_announce_winner(board)
     
 
     
