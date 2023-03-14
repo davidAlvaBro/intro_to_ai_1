@@ -13,6 +13,7 @@ Switch: ⟋⟍⟋⟍
 King: M
 Reserved: ☉
 '''
+# TODO Change the .values to make laser orientation an orientation instead of a value 
 
 class Piece():
     def __init__(self, orientation, position, player):
@@ -28,6 +29,12 @@ class Piece():
         self.orientation = None
         self.position = None
         self.alive = False
+
+    def rotate(self, rotate): # TODO remove? Is this ever used? 
+        if rotate == "left":
+            self.orientation = (self.orientation - 1) % 4
+        if rotate == "right": 
+            self.orientation = (self.orientation + 1) % 4
     
     def take_snapshot(self):
         return {"orientation": self.orientation,
@@ -49,12 +56,8 @@ class Piece():
 
     def laser_interaction(self, laser_from_direction):
         raise NotImplementedError
-        # TODO laser interaction - overwritten in all pieces 
+        # Overwritten in all pieces 
     
-    def get_possible_actions(self, board):
-        raise NotImplementedError
-        # TODO get possible actions - overwritten in all pieces
-
 class King(Piece):
     def __init__(self, orientation, position, player):
         super().__init__(orientation=orientation, position=position, player=player)
@@ -64,9 +67,6 @@ class King(Piece):
     def laser_interaction(self, laser_from_direction): # King dies when hit from all directions
         return config.LaserOptions.DEAD
     
-    def get_possible_actions(self, board):
-        legal_actions = []
-        return legal_actions
         
 class Switch(Piece):
     def __init__(self, orientation, position, player):
@@ -75,10 +75,10 @@ class Switch(Piece):
         self.piece = "Switch"
 
     def laser_interaction(self, laser_from_direction): # Reflects incoming lasers from a to b and from c to d (and reversed)
-        self.a = (config.Orientation.DOWN.value + self.orientation ) % 4 
-        self.b = (config.Orientation.LEFT.value + self.orientation ) % 4
-        self.c = (config.Orientation.UP.value + self.orientation ) % 4
-        self.d = (config.Orientation.RIGHT.value + self.orientation ) % 4
+        self.a = (config.Orientation.DOWN.value + self.orientation.value ) % 4 
+        self.b = (config.Orientation.LEFT.value + self.orientation.value ) % 4
+        self.c = (config.Orientation.UP.value + self.orientation.value ) % 4
+        self.d = (config.Orientation.RIGHT.value + self.orientation.value ) % 4
         if laser_from_direction == self.a:
             return (self.b + 2) % 4
         elif laser_from_direction == self.b:
@@ -88,9 +88,6 @@ class Switch(Piece):
         elif laser_from_direction == self.d:
             return (self.c + 2) % 4
     
-    def get_possible_actions(self, board):
-        legal_actions = []
-        return legal_actions
 
 class Defender(Piece):
     def __init__(self, orientation, position, player):
@@ -99,7 +96,7 @@ class Defender(Piece):
         self.piece = "Defender"
     
     def laser_interaction(self, laser_from_direction): # Stops when defender is orientated opposite of laser direction 
-        if laser_from_direction == (self.orientation + 2) % 4:
+        if laser_from_direction == (self.orientation.value + 2) % 4:
             return config.LaserOptions.STOP
         else:
             return config.LaserOptions.DEAD
@@ -111,8 +108,8 @@ class Deflector(Piece):
         self.piece = "Deflector"
         
     def laser_interaction(self, laser_from_direction): # Reflects incoming lasers from a to b (and reversed)
-        self.a = (config.Orientation.DOWN.value + self.orientation ) % 4
-        self.b = (config.Orientation.LEFT.value + self.orientation ) % 4
+        self.a = (config.Orientation.DOWN.value + self.orientation.value ) % 4
+        self.b = (config.Orientation.LEFT.value + self.orientation.value ) % 4
         if laser_from_direction == self.a:
             return (self.b + 2) % 4
         elif laser_from_direction == self.b :

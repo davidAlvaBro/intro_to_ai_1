@@ -1,7 +1,7 @@
 import config
 
 from pieces import King, Switch, Defender, Deflector, Laser
-from visual_representation import print_board
+from gui import print_board
 import game
 
 from board import Board

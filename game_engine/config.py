@@ -3,10 +3,6 @@ from colorama import init as colorama_init
 from colorama import Fore
 from colorama import Style
 
-WIDTH = 10
-HEIGHT = 8
-
-
 class Player(Enum):
     NONE = 0
     BLUE = 1 
@@ -15,11 +11,15 @@ class Player(Enum):
     def change_player(self):
         return Player(-1*self.value)
 
+WIDTH = 10
+HEIGHT = 8
+LASER_POSITION = {Player.BLUE: (0,0), 
+                  Player.RED: (WIDTH-1, HEIGHT-1)}
+
 class Rotate(Enum):
     LEFT = 0
     RIGHT = 1
     
-    # TODO make a function that takes in orientation and spits out orientation 
 
 class Move(Enum):
     UP = (0,-1)
@@ -50,6 +50,11 @@ class Orientation(Enum):
         else: 
             raise ValueError("DUM NUMS")
 
+    def turn(self, rotate): 
+        if rotate == Rotate.RIGHT: 
+            return Orientation((self + 1) % 4)
+        elif rotate == Rotate.LEFT: 
+            return Orientation((self - 1) % 4)
 
 class LaserOptions(Enum):
     UP = 0
@@ -84,5 +89,3 @@ def blue_piece(symbol):
 def red_piece(symbol):
     return Fore.RED+symbol+Style.RESET_ALL
     
-# TODO Have laser position in here 
-laser_position = (None, None)
