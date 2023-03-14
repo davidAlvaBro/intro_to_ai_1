@@ -289,9 +289,9 @@ def get_legal_actions(board):
             position = piece.position
             for i in config.Rotate:
                 if is_legal_action(board, position, rotate=i, direction=None):
-                    legal_actions.append((piece, i))
+                    legal_actions.append((piece, (None, i)))
             for i in config.Move:
                 if is_legal_action(board, position, rotate=None, direction=i):
-                    legal_actions.append((piece, i))
+                    legal_actions.append((piece, (i, None)))
     return legal_actions
     

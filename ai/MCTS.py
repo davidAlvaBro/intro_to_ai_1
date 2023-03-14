@@ -24,14 +24,20 @@ class MCTS_node:
         self.snapshot = board.take_snapshot()
         self.board = board
         self.parent = parent
-        self.won_games = 0
-        self.total_games = 0
         self.children = {} # key : piece_action = (pos, action) , value : node 
         self.UCB = None
         self.LCB = None
-        self.play_random() 
-        # Save snapshot 
-        # Do play random while restore from snapshot play random X times 
+        
+        # Play N initial games 
+        self.N = 10 # TODO change this?! Move to config mebe? 
+        self.won_games = self.play_random() 
+        self.total_games = 1 
+        for _ in range(self.N):
+            # Restore to snapshot and play again 
+            self.board.restore_from_snapshot(self.snapshot)
+            self.won_games += self.play_random() 
+            self.total_games += 1 
+    
     
     def update_game_counters(self, n_won, n_total):
         self.won_games += n_won
@@ -52,24 +58,47 @@ class MCTS_node:
     def expand(self):
         # Generate all legal actions
         # For each action generate child with correct board (restore snapshot first)
+        
+        # Prepare to expand - restore from snapshot and get legal actions
         self.board.restore_from_snapshot(self.snapshot)
         legal_actions = board.get_legal_actions(self.board)
+        
+        # For each action make the child 
         for action in legal_actions:
             (piece, act) = action
-            if act in config.Rotate:
-                new_board = board.action(self.board, position = piece.position, rotate=act , direction='No')
-            else:
-                new_board = board.action(self.board, position = piece.position, rotate='No' , direction=act)
-            MCTS_node(board = new_board, parent = self)
+            new_board = board.action(self.board, position=piece.position, rotate=act[1], direction=act[0])
+            self.children[(piece.position, act)] = MCTS_node(board = new_board, parent = self)
 
-        raise NotImplementedError()
+        
     
     def play_random(self):
-        # play one random game      
-        raise NotImplementedError()
+        """Plays a random game from the board position at self.board
+        
+        return:
+            Player that won 
+        """
+        while(True): 
+            # Get a random move - It is legal 
+            piece, action = self.get_random_move()
+            
+            # Move 
+            self.board = board.step(self.board, piece.position, direction=action[0], rotate=action[1]) # TODO is the "self.board =" necessary? if it is we use much more space  
+            
+            # Goal test 
+            if board.goal_test(self.board): 
+                break 
+        
+        #return self.board.won # TODO To return 0 and 1 we need to know which player is controlling the MCST, for now assume that the computer is always RED 
+        return int(self.board.won == config.Player.RED) # This is to make it a 1 or 0
+        
     
     def get_random_move(self):
-         
+        """Function that returns a random action in the board position (stored in self)
+
+        Returns:
+            piece_to_move (Piece): The chosen piece to move 
+            sampled_move (tuple): (Move, Rotate) - one element is None
+        """
         player = self.board.turn
         if player == config.Player.RED:
             piece_list = self.board.red_pieces
