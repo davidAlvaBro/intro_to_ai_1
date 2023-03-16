@@ -55,7 +55,7 @@ class Board():
         self.board[(8,7)].reserved = p.RED
         # Generate Lasers
         self.board[config.LASER_POSITION[p.RED]].contents = pieces.Laser(ori.DOWN, config.LASER_POSITION[p.RED], p.RED)
-        self.board[config.LASER_POSITION[p.BLUE]].contents = pieces.Laser(ori.UP, config.LASER_POSITION[p.RED], p.BLUE)
+        self.board[config.LASER_POSITION[p.BLUE]].contents = pieces.Laser(ori.UP, config.LASER_POSITION[p.BLUE], p.BLUE)
         # Generate Deflectors
         self.board[(0,3)].contents = pieces.Deflector(ori.UP, (0,3), p.RED)
         self.board[(0,4)].contents = pieces.Deflector(ori.RIGHT, (0,4), p.RED)
