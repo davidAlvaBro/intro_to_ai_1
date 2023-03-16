@@ -119,7 +119,9 @@ class Board():
         
         {
             "red": [piece_snapshot, piece_snapshot, ...],
-            "blue": [piece_snapshot, piece_snapshot, ...]
+            "blue": [piece_snapshot, piece_snapshot, ...],
+            "turn": player,
+            "won": player
         }
         
         where piece_snapshot is the snapshot of a piece
@@ -132,6 +134,8 @@ class Board():
             snapshot["red"].append(piece.take_snapshot())
         for piece in self.blue_pieces:
             snapshot["blue"].append(piece.take_snapshot())
+        snapshot["turn"] = self.turn
+        snapshot["won"] = self.won
     
         return snapshot
     
@@ -167,6 +171,9 @@ class Board():
         for i,piece_snapshot in enumerate(snapshot["blue"]):
             piece = self.blue_pieces[i]
             update_piece_and_board(piece, piece_snapshot)
+        
+        self.won = snapshot["won"]
+        self.turn = snapshot["turn"]
     
     # def get_legal_actions(self, position: tuple):
     #     """
