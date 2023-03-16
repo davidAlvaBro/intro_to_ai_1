@@ -30,7 +30,7 @@ def input_to_direction(input_text) -> config.Move:
 
 def input_to_tuple(input_text):
     # Spits out a zero indexed version of the coordinates that the user gives
-    x = ord(input_text[0]) - ord('A')
+    x = ord(input_text[0].upper()) - ord('A')
     y = ord(input_text[1]) - ord('1')
     return (x,y)
 
@@ -48,16 +48,18 @@ def gui_action_prompt(board):
     while not valid_action:
         action = input("Pick your action [Rotate, Move]: ")
         action = action.lower()
-        # TODO Error handling if user doesn't pass enough inputs for input function to unpack
-        if action == "rotate":
-            position, rotate = input("Pick your piece to rotate, ex. A3, and rotation direction, Left or Right: ").split(' ')
-            position = input_to_tuple(position)
-            rotate = input_to_rotate(rotate)
-        elif action == "move":
-            position, direction = input("Pick your piece and direction to move [Up, Right, Down, Left, Right-Up, Right-Down, Left-Up, Left-Down]: ").split()
-            position = input_to_tuple(position)
-            direction = input_to_direction(direction)
-        else:
+        try:
+            if action == "rotate":
+                position, rotate = input("Pick your piece to rotate, ex. A3, and rotation direction, Left or Right: ").split(' ')
+                position = input_to_tuple(position)
+                rotate = input_to_rotate(rotate)
+            elif action == "move":
+                position, direction = input("Pick your piece and direction to move [Up, Right, Down, Left, Right-Up, Right-Down, Left-Up, Left-Down]: ").split()
+                position = input_to_tuple(position)
+                direction = input_to_direction(direction)
+            else:
+                raise Exception
+        except:
             print("Unknown action, try again...")
 
         if position is not None and (rotate is not None or direction is not None):
