@@ -88,4 +88,7 @@ def blue_piece(symbol):
 
 def red_piece(symbol):
     return Fore.RED+symbol+Style.RESET_ALL
-    
+
+
+# n initial random games
+INITIAL_GAMES = 10
