@@ -15,7 +15,7 @@ def print_board(board):
         print()
 
 def input_to_direction(input_text) -> config.Move: 
-    input_text.upper()
+    input_text = input_text.upper()
     # TODO Maybe moving wrong place. Ex it moved Left-Down instead of Down.
     if input_text not in ("UP", "DOWN", "LEFT", "RIGHT"):
         if input_text == "RIGHT-UP":
@@ -24,11 +24,12 @@ def input_to_direction(input_text) -> config.Move:
             input_text = "RIGHT_DOWN"
         elif input_text == "LEFT-UP":
             input_text = "LEFT_UP"
-        else: 
+        elif input_text == "LEFT-DOWN": 
             input_text = "LEFT_DOWN"
     return config.Move[input_text]
 
 def input_to_tuple(input_text):
+    # Spits out a zero indexed version of the coordinates that the user gives
     x = ord(input_text[0]) - ord('A')
     y = ord(input_text[1]) - ord('1')
     return (x,y)
