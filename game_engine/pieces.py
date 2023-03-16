@@ -76,17 +76,17 @@ class Switch(Piece):
 
     def laser_interaction(self, laser_from_direction): # Reflects incoming lasers from a to b and from c to d (and reversed)
         self.a = (config.Orientation.DOWN.value + self.orientation.value ) % 4 
-        self.b = (config.Orientation.LEFT.value + self.orientation.value ) % 4
+        self.b = (config.Orientation.RIGHT.value + self.orientation.value ) % 4
         self.c = (config.Orientation.UP.value + self.orientation.value ) % 4
-        self.d = (config.Orientation.RIGHT.value + self.orientation.value ) % 4
-        if laser_from_direction == self.a:
-            return (self.b + 2) % 4
-        elif laser_from_direction == self.b:
-            return (self.a + 2) % 4 
-        elif laser_from_direction == self.c:
-            return (self.d + 2) % 4
-        elif laser_from_direction == self.d:
-            return (self.c + 2) % 4
+        self.d = (config.Orientation.LEFT.value + self.orientation.value ) % 4
+        if laser_from_direction.value == self.a:
+            return config.LaserOptions((self.b + 2) % 4)
+        elif laser_from_direction.value == self.b:
+            return config.LaserOptions((self.a + 2) % 4)
+        elif laser_from_direction.value == self.c:
+            return config.LaserOptions((self.d + 2) % 4)
+        elif laser_from_direction.value == self.d:
+            return config.LaserOptions((self.c + 2) % 4)
     
 
 class Defender(Piece):
@@ -96,7 +96,7 @@ class Defender(Piece):
         self.piece = "Defender"
     
     def laser_interaction(self, laser_from_direction): # Stops when defender is orientated opposite of laser direction 
-        if laser_from_direction == (self.orientation.value + 2) % 4:
+        if laser_from_direction.value == (self.orientation.value + 2) % 4:
             return config.LaserOptions.STOP
         else:
             return config.LaserOptions.DEAD
@@ -110,10 +110,10 @@ class Deflector(Piece):
     def laser_interaction(self, laser_from_direction): # Reflects incoming lasers from a to b (and reversed)
         self.a = (config.Orientation.DOWN.value + self.orientation.value ) % 4
         self.b = (config.Orientation.LEFT.value + self.orientation.value ) % 4
-        if laser_from_direction == self.a:
-            return (self.b + 2) % 4
-        elif laser_from_direction == self.b :
-            return (self.a + 2) % 4 
+        if laser_from_direction.value == self.a:
+            return config.LaserOptions((self.b + 2) % 4)
+        elif laser_from_direction.value == self.b :
+            return config.LaserOptions((self.a + 2) % 4)
         else:
             return config.LaserOptions.DEAD
 

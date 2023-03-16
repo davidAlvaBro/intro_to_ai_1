@@ -50,11 +50,11 @@ class Orientation(Enum):
         else: 
             raise ValueError("DUM NUMS")
 
-    def turn(self, rotate): 
+    def rotate(self, rotate): 
         if rotate == Rotate.RIGHT: 
-            return Orientation((self + 1) % 4)
+            return Orientation((self.value + 1) % 4)
         elif rotate == Rotate.LEFT: 
-            return Orientation((self - 1) % 4)
+            return Orientation((self.value - 1) % 4)
 
 class LaserOptions(Enum):
     UP = 0

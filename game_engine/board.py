@@ -210,26 +210,28 @@ def is_legal_action(board, position, rotate=None, direction=None) -> bool:
                     illegal_move = True # Only way rotation can go wrong is if the player tries both rotate and move
             
             elif direction is not None: # Check if the destination is legal 
-                destination = board.board[sum_coordinates(position, direction.value)] 
-                if board.board[position].contents.piece == "Laser":
-                    illegal_move = True # You cannot move "laser" to another location 
-                elif not destination in board.board.keys(): 
+                destination_coord = sum_coordinates(position, direction.value)
+                if not destination_coord in board.board.keys():
                     illegal_move = True # You are moving out of the board 
-                elif destination.contents is not None: 
-                    illegal_move = True # You are moving onto another piece (this ain't chess)
-                elif not (destination.reserved == board.turn or destination.reserved == None):
-                    illegal_move = True # You can't move to your opponents reserved fields 
-             
+                else: 
+                    destination = board.board[destination_coord] 
+                    if board.board[position].contents.piece == "Laser":
+                        illegal_move = True # You cannot move "laser" to another location 
+                    elif destination.contents is not None: 
+                        illegal_move = True # You are moving onto another piece (this ain't chess)
+                    elif destination.reserved.change_player() == board.turn:
+                        illegal_move = True # You can't move to your opponents reserved fields 
+ 
         else: 
             illegal_move = True 
         
-        return illegal_move
+        return not illegal_move
 
 def action(board, position, rotate=None, direction=None):
     # Take the action given and return board 
     piece = board.board[position].contents
     if rotate is not None: 
-        piece.orientation.rotate(rotate) # turning right adds 1 to the position (see table Move)
+        piece.orientation = piece.orientation.rotate(rotate) # turning right adds 1 to the position (see table Move)
     elif direction is not None:
         new_position = sum_coordinates(position, direction.value)
         piece.position = new_position
