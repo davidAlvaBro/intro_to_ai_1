@@ -7,6 +7,9 @@ from config import Player as p
 import random
 import math
 from tqdm import tqdm
+from timer import Timer
+
+timer = Timer()
 
 
 class MCTS_node: 
@@ -31,21 +34,23 @@ class MCTS_node:
     def __repr__(self):
         return f"Node(turn={self.turn}, winner={self.won}, {self.won_games}, {self.total_games}, {self.LCB}, {self.UCB})"
 
-    def get_best_child(self, reverse=False):
+    def get_best_child(self, select_for_action=False):
         """
         returns the best child and the action leading to it.
         """
+        # TODO take the node with the highest total_games as action (when choosing action)
+        # TODO is the if statement necessary
         if self.won is p.NONE and len(self.children) > 0:
             UCB = lambda x: self.children[x].UCB
             LCB = lambda x: self.children[x].LCB
             if (self.optimize_player == self.turn):
                 choose_fn = max
-                if not reverse: key_fn = UCB
-                else:           key_fn = LCB
+                if not select_for_action: key_fn = UCB
+                else:                     key_fn = LCB
             else:
                 choose_fn = min
-                if not reverse: key_fn = LCB
-                else:           key_fn = UCB
+                if not select_for_action: key_fn = LCB
+                else:                     key_fn = UCB
 
             position, action = choose_fn(self.children.keys(), key=key_fn)
             return position, action, self.children[(position, action)]
@@ -62,22 +67,25 @@ class MCTS_node:
     @property
     def LCB(self):
         return self.get_confidence_bounds()[0]
+    @property
+    def mean(self):
+        return self.get_confidence_bounds()[2]
 
     def get_confidence_bounds(self):
         """
         return LCB, UCB
         """
-        if self.total_games == 0:
+        if self.total_games == 0 or self.parent.total_games == 0:
             return None, None
         elif self.won is p.NONE:
             a = self.won_games/self.total_games
             b = math.sqrt(2*math.log(self.parent.total_games)/self.total_games)
             # b = (1-a)*a/self.total_games*1.96
-            return a - b, a + b
+            return a - b, a + b, a
         elif self.won == self.optimize_player:
-            return float("inf"), float("inf")
+            return float("inf"), float("inf"), float('inf')
         else:
-            return float("-inf"), float("-inf")
+            return float("-inf"), float("-inf"), float('-inf')
 
     def backprop(self, n_won, n_total):
         node = self
@@ -104,11 +112,14 @@ class MCTS_node:
             # For each action make the child
             n_won = 0
             n_total = 0
-            for i, (piece, act) in enumerate(legal_actions):
+            for i, (position, act) in enumerate(legal_actions):
+                assert position is not None
+                assert act is not None
+                # assert pos is not None and act is not None
                 # restore from snapshot
                 if i != 0: self.board.restore_from_snapshot(self.snapshot)
                 # take action
-                board.step(self.board, position=piece.position, rotate=act[1], direction=act[0])
+                board.step(self.board, position=position, rotate=act[1], direction=act[0])
                 child = MCTS_node(board=self.board, parent=self)
                 # test if the game is over
                 if child.won != p.NONE:
@@ -119,11 +130,13 @@ class MCTS_node:
                     #play N random games
                     for j in range(N):
                         # if j != 0: child.board.restore_from_snapshot(self.snapshot)
-                        self.won_games += self.play_random(restore_from_snapshot = (j != 0))
-                        self.total_games += 1
+                        child.won_games += self.play_random(restore_from_snapshot = (j != 0))
+                        child.total_games += 1
                 n_won += child.won_games
                 n_total += child.total_games
-                self.children[(piece.position, act)] = child
+                self.children[(position, act)] = child
+                assert position is not None
+                assert act is not None
 
         return n_won, n_total
         # self.backprop(n_won, n_total)
@@ -141,16 +154,19 @@ class MCTS_node:
         if restore_from_snapshot: self.board.restore_from_snapshot(self.snapshot)
         while depth < config.MAX_RANDOM_DEPTH:
             depth += 1
-            if depth%1000 == 0: print("monte carlo depth reached",depth)
+            # if depth%1000 == 0: print("monte carlo depth reached", depth)
             # Get a random move - It is legal 
+            timer("get_random_move")
             piece, action = self.get_random_move()
             
             # Move 
+            timer("step")
             board.step(self.board, piece.position, direction=action[0], rotate=action[1])
-
             # Goal test 
+            timer("goal_test")
             if board.goal_test(self.board): 
                 break 
+            timer()
         
         return int(self.board.won == self.optimize_player) # This is to make it a 1 or 0
         
@@ -217,11 +233,11 @@ def select_expansion_node(root: MCTS_node) -> MCTS_node:
     return root
 
 
-def print_tree(root, layer=0):
-    print("   "*layer, root)
+def print_tree(root, pos=None, act=None, layer=0):
+    print("   "*layer, pos, act, root)
     for (pos, act), child in root.children.items():
-        assert pos is not None and act is not None
-        print_tree(child, layer+1)
+        # assert pos is not None and act is not None
+        print_tree(child, pos, act, layer+1)
     
 
 def run_monte_carlo(board: board.Board, N: int, return_diagnostics=False) -> tuple:
@@ -239,15 +255,14 @@ def run_monte_carlo(board: board.Board, N: int, return_diagnostics=False) -> tup
         node = select_expansion_node(root)
         n_won, n_total = node.expand()
         node.backprop(n_won, n_total)
-    (position, (rotate, direction), child), root = root.get_best_child(reverse=True)
-    if return_diagnostics:
-        return position, rotate, direction, child, root
-    else:
-        return position, rotate, direction
+    position, (direction, rotate), child = root.get_best_child(select_for_action=True)
+    board.restore_from_snapshot(root.snapshot)
+    return position, rotate, direction, root, child
 
 if __name__ == "__main__":
     b = board.Board()
-    (position, action, child), root = run_monte_carlo(b, 100)
+    position, action, child, root, child = run_monte_carlo(b, 100, True)
     for c in root.children.values():
         print(c)
     print(f"Best move is\n  postition:{position}\n  action:{action}\n  with {child.won_games} wins out of {child.total_games} games")
+    # print(timer)

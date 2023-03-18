@@ -39,7 +39,6 @@ def input_to_rotate(input_text):
 
 
 def gui_action_prompt(board):
-    print_board(board)
     valid_action = False # Check if we're able to interpret the input as an action
     action = ""
     rotate = None

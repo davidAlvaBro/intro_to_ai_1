@@ -58,29 +58,29 @@ class Board():
         self.board[config.LASER_POSITION[p.BLUE]].contents = pieces.Laser(ori.UP, config.LASER_POSITION[p.BLUE], p.BLUE)
         # Generate Deflectors
         self.board[(0,3)].contents = pieces.Deflector(ori.UP, (0,3), p.RED)
-        self.board[(0,4)].contents = pieces.Deflector(ori.RIGHT, (0,4), p.RED)
-        self.board[(2,1)].contents = pieces.Deflector(ori.DOWN, (2,1), p.RED)
-        self.board[(6,5)].contents = pieces.Deflector(ori.RIGHT, (6,5), p.RED)
+        # self.board[(0,4)].contents = pieces.Deflector(ori.RIGHT, (0,4), p.RED)
+        # self.board[(2,1)].contents = pieces.Deflector(ori.DOWN, (2,1), p.RED)
+        # self.board[(6,5)].contents = pieces.Deflector(ori.RIGHT, (6,5), p.RED)
         self.board[(7,0)].contents = pieces.Deflector(ori.RIGHT, (7,0), p.RED)
-        self.board[(7,3)].contents = pieces.Deflector(ori.RIGHT, (7,3), p.RED)
+        # self.board[(7,3)].contents = pieces.Deflector(ori.RIGHT, (7,3), p.RED)
         self.board[(7,4)].contents = pieces.Deflector(ori.UP, (7,4), p.RED)
         self.board[(2,3)].contents = pieces.Deflector(ori.DOWN, (2,3), p.BLUE)
-        self.board[(2,4)].contents = pieces.Deflector(ori.LEFT, (2,4), p.BLUE)
+        # self.board[(2,4)].contents = pieces.Deflector(ori.LEFT, (2,4), p.BLUE)
         self.board[(2,7)].contents = pieces.Deflector(ori.LEFT, (2,7), p.BLUE)
-        self.board[(3,2)].contents = pieces.Deflector(ori.LEFT, (3,2), p.BLUE)
-        self.board[(7,6)].contents = pieces.Deflector(ori.UP, (7,6), p.BLUE)
-        self.board[(9,3)].contents = pieces.Deflector(ori.LEFT, (9,3), p.BLUE)
+        # self.board[(3,2)].contents = pieces.Deflector(ori.LEFT, (3,2), p.BLUE)
+        # self.board[(7,6)].contents = pieces.Deflector(ori.UP, (7,6), p.BLUE)
+        # self.board[(9,3)].contents = pieces.Deflector(ori.LEFT, (9,3), p.BLUE)
         self.board[(9,4)].contents = pieces.Deflector(ori.DOWN, (9,4), p.BLUE)
         # Generate Switches
-        self.board[(4,3)].contents = pieces.Switch(ori.RIGHT, (4,3), p.RED)
+        # self.board[(4,3)].contents = pieces.Switch(ori.RIGHT, (4,3), p.RED)
         self.board[(5,3)].contents = pieces.Switch(ori.UP, (5,3), p.RED)
         self.board[(4,4)].contents = pieces.Switch(ori.UP, (4,4), p.BLUE)
-        self.board[(5,4)].contents = pieces.Switch(ori.RIGHT, (5,4), p.BLUE)
+        # self.board[(5,4)].contents = pieces.Switch(ori.RIGHT, (5,4), p.BLUE)
         # Generate Defenders
-        self.board[(4,0)].contents = pieces.Defender(ori.DOWN, (4,0), p.RED)
-        self.board[(6,0)].contents = pieces.Defender(ori.DOWN, (6,0), p.RED)
-        self.board[(3,7)].contents = pieces.Defender(ori.UP, (3,7), p.BLUE)
-        self.board[(5,7)].contents = pieces.Defender(ori.UP, (5,7), p.BLUE)
+        # self.board[(4,0)].contents = pieces.Defender(ori.DOWN, (4,0), p.RED)
+        # self.board[(6,0)].contents = pieces.Defender(ori.DOWN, (6,0), p.RED)
+        # self.board[(3,7)].contents = pieces.Defender(ori.UP, (3,7), p.BLUE)
+        # self.board[(5,7)].contents = pieces.Defender(ori.UP, (5,7), p.BLUE)
         # Generate Kings
         self.board[(5,0)].contents = pieces.King(ori.DOWN, (5,0), p.RED)
         self.board[(4,7)].contents = pieces.King(ori.UP, (4,7), p.BLUE)
@@ -293,14 +293,16 @@ def get_legal_actions(board):
     else: 
         piece_list = board.blue_pieces
         
-    for piece in piece_list:
+    for j in range(len(piece_list)):
+        piece = piece_list[j]
         if piece.alive:
             position = piece.position
+            assert position is not None
             for i in config.Rotate:
                 if is_legal_action(board, position, rotate=i, direction=None):
-                    legal_actions.append((piece, (None, i)))
+                    legal_actions.append((position, (None, i)))
             for i in config.Move:
                 if is_legal_action(board, position, rotate=None, direction=i):
-                    legal_actions.append((piece, (i, None)))
+                    legal_actions.append((position, (i, None)))
     return legal_actions
     
