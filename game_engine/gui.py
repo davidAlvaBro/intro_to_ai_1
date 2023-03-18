@@ -71,4 +71,4 @@ def gui_illegal_action():
     print("Attempted action was illegal, try again...")
 
 def gui_announce_winner(board):
-    print(f"The game has finished, the winner is the {board.turn.name.title()} player!")
+    print(f"The game has finished, the winner is the {board.won.name.title()} player!")
