@@ -168,7 +168,18 @@ class MCTS_node:
                 break 
             timer()
         
-        return int(self.board.won == self.optimize_player) # This is to make it a 1 or 0
+        # TODO maybe change this back to what it was before
+        # return int(self.board.won == self.optimize_player) # This is to make it a 1 or 0
+        if self.board.won == self.optimize_player: 
+            if self.board.turn == self.optimize_player: 
+                return 0.5 
+            else: 
+                return 1 
+        else: 
+            if self.board.turn == self.optimize_player: 
+                return -0.5 
+            else: 
+                return -1 
         
     
     def get_random_move(self):

@@ -71,10 +71,13 @@ class Board():
         # self.board[(7,6)].contents = pieces.Deflector(ori.UP, (7,6), p.BLUE)
         # self.board[(9,3)].contents = pieces.Deflector(ori.LEFT, (9,3), p.BLUE)
         self.board[(9,4)].contents = pieces.Deflector(ori.DOWN, (9,4), p.BLUE)
+        self.board[(3,0)].contents = pieces.Deflector(ori.DOWN, (3,0), p.RED) # Bonus
+        self.board[(6,7)].contents = pieces.Deflector(ori.UP, (6,7), p.BLUE) # Bonus
+        
         # Generate Switches
         # self.board[(4,3)].contents = pieces.Switch(ori.RIGHT, (4,3), p.RED)
-        self.board[(5,3)].contents = pieces.Switch(ori.UP, (5,3), p.RED)
-        self.board[(4,4)].contents = pieces.Switch(ori.UP, (4,4), p.BLUE)
+        self.board[(5,2)].contents = pieces.Switch(ori.UP, (5,2), p.RED) # Changed from (5,3)
+        self.board[(4,5)].contents = pieces.Switch(ori.UP, (4,5), p.BLUE) # Changed from (4, 4)
         # self.board[(5,4)].contents = pieces.Switch(ori.RIGHT, (5,4), p.BLUE)
         # Generate Defenders
         # self.board[(4,0)].contents = pieces.Defender(ori.DOWN, (4,0), p.RED)
