@@ -154,7 +154,7 @@ class Board():
             current_pos = piece.position
             # if current position contains the current
             # piece, remove it from that position
-            if self.board[current_pos].contents == piece:
+            if current_pos != None and self.board[current_pos].contents == piece:
                 self.board[current_pos].contents = None
             # restore piece from snapshot and move
             # it to its original (snapshot) position

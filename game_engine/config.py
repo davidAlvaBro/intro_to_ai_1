@@ -89,6 +89,9 @@ def blue_piece(symbol):
 def red_piece(symbol):
     return Fore.RED+symbol+Style.RESET_ALL
 
-
+#monte carlo parameters
 # n initial random games
-INITIAL_GAMES = 10
+INITIAL_RANDOM_GAMES = 2
+MAX_RANDOM_DEPTH = float("inf")
+AI_PLAYER = Player.BLUE
+MC_N_EXPANSIONS = 2
