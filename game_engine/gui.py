@@ -39,7 +39,6 @@ def input_to_rotate(input_text):
 
 
 def gui_action_prompt(board):
-    print_board(board)
     valid_action = False # Check if we're able to interpret the input as an action
     action = ""
     rotate = None
@@ -71,4 +70,4 @@ def gui_illegal_action():
     print("Attempted action was illegal, try again...")
 
 def gui_announce_winner(board):
-    print(f"The game has finished, the winner is the {board.turn.name.title()} player!")
+    print(f"The game has finished, the winner is the {board.won.name.title()} player!")

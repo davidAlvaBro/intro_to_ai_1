@@ -94,4 +94,4 @@ def red_piece(symbol):
 INITIAL_RANDOM_GAMES = 2
 MAX_RANDOM_DEPTH = float("inf")
 AI_PLAYER = Player.BLUE
-MC_N_EXPANSIONS = 2
+MC_N_ITERATIONS = 200
