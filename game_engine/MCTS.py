@@ -6,8 +6,15 @@ import board
 from config import Player as p
 import random
 import math
+from pieces import Piece, Laser
 from tqdm import tqdm
 from timer import Timer
+from typing import List, Tuple, Dict, Union
+# import Iterable
+from collections.abc import Iterable
+from gui import print_board
+
+
 
 timer = Timer()
 
@@ -28,11 +35,11 @@ class MCTS_node:
         self.turn = self.snapshot["turn"]
         self.parent: MCTS_node = parent
         self.children = {} # key : piece_action = (pos, action) , value : node 
-        self.won_games = 0
+        self.total_reward = 0
         self.total_games = 0
     
     def __repr__(self):
-        return f"Node(turn={self.turn}, winner={self.won}, {self.won_games}, {self.total_games}, {self.LCB}, {self.UCB})"
+        return f"Node(turn={self.turn}, winner={self.won}, {self.total_reward}, {self.total_games}, {self.LCB}, {self.UCB})"
 
     def get_best_child(self, select_for_action=False):
         """
@@ -43,14 +50,16 @@ class MCTS_node:
         if self.won is p.NONE and len(self.children) > 0:
             UCB = lambda x: self.children[x].UCB
             LCB = lambda x: self.children[x].LCB
-            if (self.optimize_player == self.turn):
+            total_games = lambda x: self.children[x].total_games
+            if select_for_action:
                 choose_fn = max
-                if not select_for_action: key_fn = UCB
-                else:                     key_fn = LCB
+                key_fn = total_games
+            elif (self.optimize_player == self.turn):
+                choose_fn = max
+                key_fn = UCB
             else:
                 choose_fn = min
-                if not select_for_action: key_fn = LCB
-                else:                     key_fn = UCB
+                key_fn = LCB
 
             position, action = choose_fn(self.children.keys(), key=key_fn)
             return position, action, self.children[(position, action)]
@@ -78,7 +87,7 @@ class MCTS_node:
         if self.total_games == 0 or self.parent.total_games == 0:
             return None, None
         elif self.won is p.NONE:
-            a = self.won_games/self.total_games
+            a = self.total_reward/self.total_games
             b = math.sqrt(2*math.log(self.parent.total_games)/self.total_games)
             # b = (1-a)*a/self.total_games*1.96
             return a - b, a + b, a
@@ -90,11 +99,18 @@ class MCTS_node:
     def backprop(self, n_won, n_total):
         node = self
         while node is not None:
-            node.won_games += n_won
+            node.total_reward += n_won
             node.total_games += n_total
             node = node.parent
 
-    
+    def compute_reward(self, won, turn):
+        if won == self.optimize_player: sign = 1
+        else:                           sign = -1
+        if turn != won: score = 2
+        else:           score = 1
+        return sign*score
+
+
     def expand(self):
         # Generate all legal actions
         # For each action generate child with correct board (restore snapshot first)
@@ -103,15 +119,15 @@ class MCTS_node:
         N = config.INITIAL_RANDOM_GAMES
 
         if self.won != p.NONE:
-            n_won = int(self.won == self.optimize_player)*N
-            n_total = N
+            total_reward = int(self.won == self.optimize_player)*N
+            total_games = N
 
         else:
             self.board.restore_from_snapshot(self.snapshot)
             legal_actions = board.get_legal_actions(self.board)
             # For each action make the child
-            n_won = 0
-            n_total = 0
+            total_reward = 0
+            total_games = 0
             for i, (position, act) in enumerate(legal_actions):
                 assert position is not None
                 assert act is not None
@@ -124,21 +140,22 @@ class MCTS_node:
                 # test if the game is over
                 if child.won != p.NONE:
                     # if the game is over, just pretend that the child played N games and won N games if the child won the game
-                    child.won_games = int(child.won == child.optimize_player)*N
+                    # child.total_reward = int(child.won == child.optimize_player)*N # old version
                     child.total_games = N
+                    child.total_reward = child.compute_reward(child.won, child.turn.change_player()) # new version
                 else:
                     #play N random games
                     for j in range(N):
                         # if j != 0: child.board.restore_from_snapshot(self.snapshot)
-                        child.won_games += self.play_random(restore_from_snapshot = (j != 0))
+                        child.total_reward += child.play_random(restore_from_snapshot = (j != 0))
                         child.total_games += 1
-                n_won += child.won_games
-                n_total += child.total_games
+                total_reward += child.total_reward
+                total_games  += child.total_games
                 self.children[(position, act)] = child
                 assert position is not None
                 assert act is not None
 
-        return n_won, n_total
+        return total_reward, total_games
         # self.backprop(n_won, n_total)
 
         
@@ -149,85 +166,113 @@ class MCTS_node:
         return:
             Player that won 
         """
-        # TODO maybe limit the maximal number of iterations
+        # TODO maybe limit the maximal number of iterations, i.e. maximal number
+        # of moves in the random game
         depth = 0
         if restore_from_snapshot: self.board.restore_from_snapshot(self.snapshot)
+
         while depth < config.MAX_RANDOM_DEPTH:
             depth += 1
             # if depth%1000 == 0: print("monte carlo depth reached", depth)
             # Get a random move - It is legal 
-            timer("get_random_move")
-            piece, action = self.get_random_move()
-            
-            # Move 
-            timer("step")
-            board.step(self.board, piece.position, direction=action[0], rotate=action[1])
+            found_move = False
+            for chosen_piece, action in self.get_random_move():
+                chosen_piece_snapshot = chosen_piece.take_snapshot()
+                # Move 
+                _, killed_piece, killed_piece_snapshot = board.step(self.board, chosen_piece.position, direction=action[0], rotate=action[1])
+    
+                # check if killed piece is opponent piece or none
+                if killed_piece is None or killed_piece.player == self.board.turn:
+                    found_move = True
+                    break
+                else:
+                    # reverse the move
+                    # change the turn
+                    self.board.turn = self.board.turn.change_player()
+                    self.board.won = p.NONE
+
+                    # reverse the move (piece)
+                    if chosen_piece.position is not None:
+                        self.board.board[chosen_piece.position].contents = None
+                    chosen_piece.restore_from_snapshot(chosen_piece_snapshot)
+                    self.board.board[chosen_piece.position].contents = chosen_piece
+
+                    # revive the killed piece
+                    if killed_piece is not None and killed_piece != chosen_piece:
+                        killed_piece.restore_from_snapshot(killed_piece_snapshot)
+                        self.board.board[killed_piece.position].contents = killed_piece
+
+                    
+
             # Goal test 
-            timer("goal_test")
-            if board.goal_test(self.board): 
+            if board.goal_test(self.board) or not found_move:
                 break 
-            timer()
-        
+
         # TODO maybe change this back to what it was before
         # return int(self.board.won == self.optimize_player) # This is to make it a 1 or 0
-        if self.board.won == self.optimize_player: 
-            if self.board.turn == self.optimize_player: 
-                return 0.5 
-            else: 
-                return 1 
-        else: 
-            if self.board.turn == self.optimize_player: 
-                return -0.5 
-            else: 
-                return -1 
+        if found_move:
+            return self.compute_reward(self.board.won, self.board.turn)
+        else:
+            return 0
+        # Lauge turned this into a function, and it is now called compute_reward
+        # it also handles the case where the game is not over
+        # in case we choose the limit the maximal depth
         
+        # if self.board.won == self.optimize_player: 
+        #     if self.board.turn == self.optimize_player: 
+        #         return 0.5 
+        #     else: 
+        #         return 1 
+        # else: 
+        #     if self.board.turn == self.optimize_player: 
+        #         return -0.5 
+        #     else: 
+        #         return -1 
     
-    def get_random_move(self):
+    def get_random_move(self) -> Iterable[Tuple[Piece, Tuple[config.Move, config.Rotate]]]:
         """Function that returns a random action in the board position (stored in self)
 
         Returns:
-            piece_to_move (Piece): The chosen piece to move 
-            sampled_move (tuple): (Move, Rotate) - one element is None
+        iterator over legal actions in random order
+        implemented as a generator, so it only calculates the next action when needed
+            yields tuples of:
+                piece_to_move (Piece): The chosen piece to move 
+                sampled_move (tuple): (Move, Rotate) - one element is None
         """
         player = self.board.turn
-        if player == config.Player.RED:
-            piece_list = self.board.red_pieces
-        else: 
-            piece_list = self.board.blue_pieces
+        if player == config.Player.RED: piece_list = self.board.red_pieces
+        else:                           piece_list = self.board.blue_pieces
         
         # Get the alive pieces and make a random choice
-        alive_pieces = [piece for piece in piece_list if piece.alive]
-        piece_to_move = random.choice(alive_pieces)
+        piece_idxs = random.sample(range(len(piece_list)), k=len(piece_list))
         
-        
-        # Get all possible moves 
-        # possible_moves = set(r for r in config.Rotate).union(set(m for m in config.Move))
-        possible_moves = [r for r in config.Rotate] + [m for m in config.Move]
-        n_possible = len(possible_moves)
-        
-        sampled_move = None
-        
-        while(sampled_move == None): 
-            idx = random.randint(0, n_possible-1)
-            possible_move = possible_moves[idx]
+        for piece_idx in piece_idxs:
+            # Get a random piece
+            piece_to_move = piece_list[piece_idx]
+            if piece_to_move.alive == False: continue
             
-            # See if the move is legal 
-            if possible_move in config.Rotate:
-                if board.is_legal_action(self.board, position=piece_to_move.position, direction=None, rotate=possible_move):
-                    sampled_move = (None, possible_move)
-                    break
-            else:
-                if board.is_legal_action(self.board, position=piece_to_move.position, direction=possible_move, rotate=None):
-                    sampled_move = (possible_move, None)
-                    break
+            # Get all possible moves 
+            # possible_moves = set(r for r in config.Rotate).union(set(m for m in config.Move))
+            possible_moves = [r for r in config.Rotate] + [m for m in config.Move]
+            possible_moves = random.sample(possible_moves, k=len(possible_moves))
             
-            # Else remove that from the set
-            possible_moves[idx] = possible_moves[n_possible-1]
-            n_possible -= 1
-            assert n_possible > 0, "No legal moves"
+            sampled_move = None
             
+            for possible_move in possible_moves:
+                
+                # See if the move is legal 
+                if possible_move in config.Rotate:
+                    if board.is_legal_action(self.board, position=piece_to_move.position, direction=None, rotate=possible_move):
+                        sampled_move = (None, possible_move)
+                else:
+                    if board.is_legal_action(self.board, position=piece_to_move.position, direction=possible_move, rotate=None):
+                        sampled_move = (possible_move, None)
+                
+                if sampled_move is not None:
+                    yield piece_to_move, sampled_move
+
         # Return a piece and an action (tuple (direction, rotate)) 
-        return piece_to_move, sampled_move
+        # return piece_to_move, sampled_move
 
 
 def select_expansion_node(root: MCTS_node) -> MCTS_node:
@@ -250,6 +295,13 @@ def print_tree(root, pos=None, act=None, layer=0):
         # assert pos is not None and act is not None
         print_tree(child, pos, act, layer+1)
     
+def print_action(pos, rotate, direction):
+    x = chr(pos[0] + ord('A'))
+    y = pos[1] + 1
+    if rotate is not None: act = "rotate", rotate.name
+    else:                  act = "move", direction.name
+    return f"{act[0]} {x}{y} {act[1]}"
+
 
 def run_monte_carlo(board: board.Board, N: int, return_diagnostics=False) -> tuple:
     """Runs the Monte Carlo Tree Search algorithm
@@ -275,5 +327,5 @@ if __name__ == "__main__":
     position, action, child, root, child = run_monte_carlo(b, 100, True)
     for c in root.children.values():
         print(c)
-    print(f"Best move is\n  postition:{position}\n  action:{action}\n  with {child.won_games} wins out of {child.total_games} games")
+    print(f"Best move is\n  postition:{position}\n  action:{action}\n  with {child.total_reward} wins out of {child.total_games} games")
     # print(timer)

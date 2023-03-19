@@ -4,6 +4,7 @@ import pieces
 import config
 from config import Player as p 
 from config import Orientation as ori
+from typing import List, Tuple, Dict, Union, Optional
 
 class Board():
     # The board class - contains pieces and possible actions  
@@ -247,6 +248,9 @@ def fire_laser(board):
     laser_position = config.LASER_POSITION[board.turn]  
     shooter = board.board[laser_position].contents
     laser = {"orientation": shooter.orientation, "position": shooter.position}
+    
+    killed_piece = None
+    killed_piece_snapshot = None
 
     while (True):
         laser["position"] = sum_coordinates(laser["position"], laser["orientation"].toMove().value) 
@@ -254,6 +258,7 @@ def fire_laser(board):
         if not laser["position"] in board.board.keys(): # Check if this new position is in the board 
             break 
         
+
         piece = board.board[laser["position"]].contents
         if piece != None: # Check if there is a piece 
             interaction = piece.laser_interaction(laser["orientation"]) 
@@ -264,12 +269,14 @@ def fire_laser(board):
                 if piece.piece == "King": # if it is the king then the opposite player wins  
                     board.won = piece.player.change_player()
                 # board.board[laser["position"]].contents = None 
+                killed_piece = piece
+                killed_piece_snapshot = killed_piece.take_snapshot()
                 board.kill_piece(piece)
                 break 
             else: 
                 laser["orientation"] = interaction # Hitting a mirror changes orientation
         
-    return board 
+    return board, killed_piece, killed_piece_snapshot
 
 def goal_test(board): 
     # Returns if the game is over who won and otherwise false
@@ -278,15 +285,15 @@ def goal_test(board):
     else: 
         return True
     
-def step(board, position, rotate, direction): 
+def step(board, position, rotate, direction) -> Tuple[Board, pieces.Piece]: 
     # Execute action, use laser and change turns change turn
     board = action(board, position, rotate, direction)
     
-    board = fire_laser(board)
+    board, killed_piece, killed_piece_snapshot = fire_laser(board)
     
     board.turn = board.turn.change_player()
     
-    return board
+    return board, killed_piece, killed_piece_snapshot
 
 def get_legal_actions(board): 
     legal_actions = []
