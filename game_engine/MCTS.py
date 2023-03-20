@@ -8,7 +8,7 @@ import random
 import math
 from pieces import Piece, Laser
 from tqdm import tqdm
-from timer import Timer
+#from timer import Timer
 from typing import List, Tuple, Dict, Union
 # import Iterable
 from collections.abc import Iterable
@@ -16,7 +16,7 @@ from gui import print_board
 
 
 
-timer = Timer()
+#timer = Timer()
 
 
 class MCTS_node: 
@@ -229,7 +229,7 @@ class MCTS_node:
         #     else: 
         #         return -1 
     
-    def get_random_move(self) -> Iterable[Tuple[Piece, Tuple[config.Move, config.Rotate]]]:
+    def get_random_move(self):# -> Iterable[Tuple[Piece, Tuple[config.Move, config.Rotate]]]:
         """Function that returns a random action in the board position (stored in self)
 
         Returns:

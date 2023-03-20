@@ -5,14 +5,14 @@ import config
 from MCTS import run_monte_carlo
 import random 
 from random_agent import random_agent
-import numpy as np
+#import pandas as pd
 
 
 # Game loop 
 if __name__ == "__main__":
     results = []
     
-    for i in range(4): 
+    for i in range(100): 
         # Make the board 
         board = b.Board()
         # Boolean that tells whether the game is over or not 
@@ -38,7 +38,7 @@ if __name__ == "__main__":
             over = b.goal_test(board) 
         
         # Now the game is over and we announce the winner 
-        gui.print_board(board)
+        #gui.print_board(board)
         gui.gui_announce_winner(board)
         
         if board.won == ai_player and board.turn != ai_player: 
@@ -50,8 +50,9 @@ if __name__ == "__main__":
         else: 
             results.append(-0.5)
         print(f"Results: {results}")
-
-    np.save("results.npy", results)
+print(results)
+#res_pd = pd.DataFrame(results)
+#res_pd.to_csv("results.csv", index=False)
         
         
 
