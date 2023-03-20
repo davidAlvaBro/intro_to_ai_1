@@ -86,3 +86,6 @@ The AI player is: Player.RED
 The game has finished, the winner is the Red player!
 Results: [0.5, 1, 1, 1, 1, 1, 0.5, 1, 1, 0.5, 1, 1, 1, 1, 1, 1, 1, 0.5, 1, 1, 0.5, 0.5, 1, 1, 1, 1, 0.5, 1, 0.5]
 The AI player is: Player.RED
+The game has finished, the winner is the Red player!
+Results: [0.5, 1, 1, 1, 1, 1, 0.5, 1, 1, 0.5, 1, 1, 1, 1, 1, 1, 1, 0.5, 1, 1, 0.5, 0.5, 1, 1, 1, 1, 0.5, 1, 0.5, 1]
+The AI player is: Player.BLUE
