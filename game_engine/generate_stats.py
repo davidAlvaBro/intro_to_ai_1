@@ -11,7 +11,7 @@ from simple_agent import simple_agent
 if __name__ == "__main__":
     results = []
     
-    for i in range(10): 
+    for i in range(3): 
         # Test if the AI player can beat a random player that does not do anything 
         # Make the board 
         board = b.Board()
@@ -32,7 +32,7 @@ if __name__ == "__main__":
                 position, rotate, direction, root, child = run_monte_carlo(board, config.MC_N_ITERATIONS)
                 # print(child)
             else:
-                position, (direction, rotate) = random_player.get_random_move(board)
+                position, (direction, rotate) = random_player.stationary_move(board)
             
             board = b.step(board, position, rotate, direction)
             # print(f"Action taken: position {position}, move {rotate, direction}") #TODO bette rprint
