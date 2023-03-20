@@ -9,10 +9,12 @@ import numpy as np
 import time
 
 agent1class = MCagent
+agent1class = random_agent
 agent2class = rotate_king_agent
 
 
 args1 = [1, 5]
+args1 = []
 args2 = []
 
 
