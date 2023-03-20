@@ -111,12 +111,12 @@ class MCTS_node:
         return sign*score
 
 
-    def expand(self):
+    def expand(self, guided, initial_random_games=config.INITIAL_RANDOM_GAMES):
         # Generate all legal actions
         # For each action generate child with correct board (restore snapshot first)
         
         # Prepare to expand - restore from snapshot and get legal actions
-        N = config.INITIAL_RANDOM_GAMES
+        N = initial_random_games
 
         if self.won != p.NONE:
             total_reward = int(self.won == self.optimize_player)*N
@@ -136,7 +136,7 @@ class MCTS_node:
                 if i != 0: self.board.restore_from_snapshot(self.snapshot)
                 # take action
                 board.step(self.board, position=position, rotate=act[1], direction=act[0])
-                child = MCTS_node(board=self.board, parent=self)
+                child = MCTS_node(board=self.board, parent=self, optimize_player=self.optimize_player)
                 # test if the game is over
                 if child.won != p.NONE:
                     # if the game is over, just pretend that the child played N games and won N games if the child won the game
@@ -147,7 +147,7 @@ class MCTS_node:
                     #play N random games
                     for j in range(N):
                         # if j != 0: child.board.restore_from_snapshot(self.snapshot)
-                        child.total_reward += child.play_random(restore_from_snapshot = (j != 0))
+                        child.total_reward += child.play_random(restore_from_snapshot = (j != 0), guided=guided)
                         child.total_games += 1
                 total_reward += child.total_reward
                 total_games  += child.total_games
@@ -160,7 +160,7 @@ class MCTS_node:
 
         
     
-    def play_random(self, restore_from_snapshot = True):
+    def play_random(self, restore_from_snapshot = True, guided=True):
         """Plays a random game from the board position at self.board
         
         return:
@@ -175,17 +175,21 @@ class MCTS_node:
             depth += 1
             # if depth%1000 == 0: print("monte carlo depth reached", depth)
             # Get a random move - It is legal 
-            found_move = False
+
             for chosen_piece, action in self.get_random_move():
                 chosen_piece_snapshot = chosen_piece.take_snapshot()
                 # Move 
                 _, killed_piece, killed_piece_snapshot = board.step(self.board, chosen_piece.position, direction=action[0], rotate=action[1])
-    
+                if not guided:
+                    found_move = True
+                    break
+
                 # check if killed piece is opponent piece or none
                 if killed_piece is None or killed_piece.player == self.board.turn:
                     found_move = True
                     break
                 else:
+                    found_move = False
                     # reverse the move
                     # change the turn
                     self.board.turn = self.board.turn.change_player()
@@ -303,20 +307,25 @@ def print_action(pos, rotate, direction):
     return f"{act[0]} {x}{y} {act[1]}"
 
 
-def run_monte_carlo(board: board.Board, N: int, return_diagnostics=False) -> tuple:
-    """Runs the Monte Carlo Tree Search algorithm
+def run_monte_carlo(board: board.Board,
+                    initial_random_games = config.INITIAL_RANDOM_GAMES,
+                    mc_n_iterations = config.MC_N_ITERATIONS,
+                    guided=True,
+                    optimize_player=config.AI_PLAYER) -> tuple:
+    """
+    Runs the Monte Carlo Tree Search algorithm
     
     Args:
         board (Board): The board to run the algorithm on
         N (int): Number of iterations
-    
+
     Returns:
         tuple: (piece, action) - the best move
     """
-    root = MCTS_node(board, None)
-    for i in tqdm(range(N), desc="Running Monte Carlo Tree Search"):
+    root = MCTS_node(board, None, optimize_player=optimize_player)
+    for i in tqdm(range(mc_n_iterations), desc="Running Monte Carlo Tree Search"):
         node = select_expansion_node(root)
-        n_won, n_total = node.expand()
+        n_won, n_total = node.expand(guided, initial_random_games)
         node.backprop(n_won, n_total)
     position, (direction, rotate), child = root.get_best_child(select_for_action=True)
     board.restore_from_snapshot(root.snapshot)

@@ -4,35 +4,45 @@ import gui
 import config
 from MCTS import run_monte_carlo
 import random 
-from random_agent import random_agent
-#import pandas as pd
+from agents import MCagent, random_agent, rotate_king_agent
+import numpy as np
+import time
 
+agent1class = MCagent
+agent2class = rotate_king_agent
+
+
+args1 = [1, 5]
+args2 = []
+
+
+fname = time.time()
 
 # Game loop 
 if __name__ == "__main__":
-    results = []
     
+    results = []
+
     for i in range(100): 
         # Make the board 
         board = b.Board()
         # Boolean that tells whether the game is over or not 
         over = False
 
-        ai_player = random.choice([config.Player.BLUE, config.Player.RED])
-        random_player = random_agent()
+        player1 = random.choice([config.Player.BLUE, config.Player.RED])
 
-        print(f"The AI player is: {ai_player}")
-        
+        # Create the agents
+        agent1 = agent1class(player1, *args1)
+        agent2 = agent2class(player1.change_player(), *args2)
+
+
         # Game loop
         while (not over): 
             # gui.print_board(board)
-            if board.turn == ai_player: 
-                # Run the AI 
-                position, rotate, direction, root, child = run_monte_carlo(board, config.MC_N_ITERATIONS)
-                # print(child)
-            else:
-                position, (direction, rotate) = random_player.get_random_move(board)
-            
+            if board.turn == agent1.player: a = agent1
+            else: a = agent2
+            position, (direction, rotate) = a.get_action(board)
+
             board, _, _ = b.step(board, position, rotate, direction)
             # print(f"Action taken: position {position}, move {rotate, direction}") #TODO bette rprint
             over = b.goal_test(board) 
@@ -41,15 +51,17 @@ if __name__ == "__main__":
         #gui.print_board(board)
         gui.gui_announce_winner(board)
         
-        if board.won == ai_player and board.turn != ai_player: 
+        if board.won == agent1.player and board.turn != agent1.player: 
             results.append(1)
-        elif board.won == ai_player: 
+        elif board.won == board.won == agent1.player: 
             results.append(0.5)
-        elif board.won != ai_player and board.turn == ai_player: 
+        elif board.won == agent2.player and board.turn != agent2.player:
             results.append(-1)
         else: 
             results.append(-0.5)
         print(f"Results: {results}")
+        np.save(f"results_{agent1}{agent2}_{fname}.npy", results)
+
 print(results)
 #res_pd = pd.DataFrame(results)
 #res_pd.to_csv("results.csv", index=False)
