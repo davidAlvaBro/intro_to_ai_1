@@ -2,7 +2,7 @@
 import board as b
 import gui
 import config
-from ai.MCTS import run_monte_carlo
+from ai.MCTS import run_monte_carlo, print_action
 
 
 # Game loop 
@@ -19,7 +19,7 @@ if __name__ == "__main__":
         gui.print_board(board)
         if board.turn == ai_player: 
             # Run the AI 
-            position, rotate, direction, root, child = run_monte_carlo(board, config.MC_N_ITERATIONS)
+            position, rotate, direction, root, child = run_monte_carlo(board)
             print(child)
         else:
             position, rotate, direction = gui.gui_action_prompt(board)
@@ -29,9 +29,9 @@ if __name__ == "__main__":
         
         if is_legal: 
             # Run the step function, execute action, use laser, change turn and check if done  
-            board = b.step(board, position, rotate, direction)
-            print(f"Action taken: position {position}, move {rotate, direction}") #TODO bette rprint
-            
+            board, _, _ = b.step(board, position, rotate, direction)
+            print(print_action(position, rotate, direction))
+
             over = b.goal_test(board) 
         else: 
             gui.gui_illegal_action()

@@ -91,7 +91,9 @@ def red_piece(symbol):
 
 #monte carlo parameters
 # n initial random games
-INITIAL_RANDOM_GAMES = 2
+# INITIAL_RANDOM_GAMES = 2
+# MC_N_ITERATIONS = 200
+INITIAL_RANDOM_GAMES = 1
+MC_N_ITERATIONS = 20
 MAX_RANDOM_DEPTH = float("inf")
 AI_PLAYER = Player.BLUE
-MC_N_ITERATIONS = 200
