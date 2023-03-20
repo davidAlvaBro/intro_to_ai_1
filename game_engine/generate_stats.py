@@ -5,14 +5,13 @@ import config
 from MCTS import run_monte_carlo
 import random 
 from agents import MCagent, random_agent, rotate_king_agent
-import numpy as np
 import time
 
 agent1class = MCagent
 agent2class = rotate_king_agent
 
-
-args1 = [1, 5]
+#"initial_random_games":1, "mc_n_iterations": 20
+args1 = [2,200]
 args2 = []
 
 
@@ -60,7 +59,10 @@ if __name__ == "__main__":
         else: 
             results.append(-0.5)
         print(f"Results: {results}")
-        np.save(f"results_{agent1}{agent2}_{fname}.npy", results)
+
+        with open(f"results_{agent1}{agent2}.txt", "a") as f:
+            f.write(str(results[-1]) + "\n")
+
 
 print(results)
 #res_pd = pd.DataFrame(results)
