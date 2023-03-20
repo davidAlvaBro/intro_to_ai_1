@@ -4,7 +4,7 @@ import gui
 import config
 from MCTS import run_monte_carlo
 import random 
-from random_agent import random_agent
+from simple_agent import simple_agent
 
 
 # Game loop 
@@ -12,21 +12,23 @@ if __name__ == "__main__":
     results = []
     
     for i in range(10): 
+        # Test if the AI player can beat a random player that does not do anything 
         # Make the board 
         board = b.Board()
         # Boolean that tells whether the game is over or not 
         over = False
 
         ai_player = random.choice([config.Player.BLUE, config.Player.RED])
-        random_player = random_agent()
+        random_player = simple_agent()
 
         print(f"The AI player is: {ai_player}")
-        
+        count = 0
         # Game loop
         while (not over): 
             # gui.print_board(board)
             if board.turn == ai_player: 
                 # Run the AI 
+                count += 1
                 position, rotate, direction, root, child = run_monte_carlo(board, config.MC_N_ITERATIONS)
                 # print(child)
             else:
@@ -41,14 +43,14 @@ if __name__ == "__main__":
         gui.gui_announce_winner(board)
         
         if board.won == ai_player and board.turn != ai_player: 
-            results.append(1)
+            results.append((1, count))
         elif board.won == ai_player: 
-            results.append(0.5)
+            results.append((0.5, count))
         elif board.won != ai_player and board.turn == ai_player: 
-            results.append(-1)
+            results.append((-1, count))
         else: 
-            results.append(-0.5)
-        print(f"Results: {results}")
+            results.append((-0.5, count))
+        print(f"Results: {results} ")
         
         
 

@@ -59,6 +59,9 @@ def gui_action_prompt(board):
             else:
                 raise Exception
         except:
+            rotate = None
+            position = None
+            direction = None
             print("Unknown action, try again...")
 
         if position is not None and (rotate is not None or direction is not None):

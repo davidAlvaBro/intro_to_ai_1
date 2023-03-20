@@ -2,8 +2,8 @@ import config
 import board as b
 import random
 
-class random_agent: 
-    def get_random_move(self, board: b.Board):
+class simple_agent: 
+    def random_move(self, board: b.Board):
         """
         Get a random legal move in the current board state 
         """
@@ -47,3 +47,21 @@ class random_agent:
             
         # Return a piece and an action (tuple (direction, rotate)) 
         return piece_to_move.position, sampled_move
+
+    def stationary_move(self, board: b.Board):
+        """
+        Rotate the king (which essentially does nothing)
+        """
+        
+        player = board.turn
+        if player == config.Player.RED:
+            piece_list = board.red_pieces
+        else: 
+            piece_list = board.blue_pieces
+        
+        # Find the king 
+        for piece in piece_list: 
+            if piece.piece == "King": 
+                piece_to_move = piece
+        
+        return piece_to_move.position, (None, config.Rotate.LEFT)
