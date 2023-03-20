@@ -5,13 +5,16 @@ from MCTS import run_monte_carlo
 
 
 class MCagent:
-    def __init__(self, player, initial_random_games = config.INITIAL_RANDOM_GAMES, mc_n_iterations = config.MC_N_ITERATIONS):
+    def __init__(self, player, initial_random_games = config.INITIAL_RANDOM_GAMES,
+                       mc_n_iterations = config.MC_N_ITERATIONS,
+                       guided=True):
         self.initial_random_games = initial_random_games
         self.mc_n_iterations = mc_n_iterations
         self.player = player
+        self.guided = guided
     
     def __repr__(self):
-        return f"MCagent({self.player.name}, {self.initial_random_games}, {self.mc_n_iterations})"
+        return f"MCagent({self.initial_random_games}, {self.mc_n_iterations}, {self.guided})"
 
     def get_action(self, board: b.Board):
         """
@@ -20,7 +23,8 @@ class MCagent:
         assert board.turn == self.player, "Wrong player"
 
         # Get the best move from the Monte Carlo Tree Search using UCB1
-        position, rotate, direction, root, child = run_monte_carlo(board, self.initial_random_games, self.mc_n_iterations)
+        position, rotate, direction, root, child = run_monte_carlo(board, self.initial_random_games,
+                                                                   self.mc_n_iterations, self.guided, self.player)
         return position, (direction, rotate)
 
 
@@ -30,7 +34,7 @@ class rotate_king_agent:
         self.player = player
     
     def __repr__(self):
-        return f"rotate_king_agent({self.player.name})"
+        return f"rotate_king_agent"
 
     def get_action(self, board: b.Board):
         """
@@ -57,7 +61,7 @@ class random_agent:
         self.player = player
     
     def __repr__(self):
-        return f"random_agent({self.player.name})"
+        return f"random_agent"
 
     def get_action(self, board: b.Board):
         """

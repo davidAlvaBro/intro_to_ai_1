@@ -71,7 +71,3 @@ def gui_illegal_action():
 
 def gui_announce_winner(board):
     print(f"The game has finished, the winner is the {board.won.name.title()} player!")
-
-import pandas as pd
-
-a = [1,2,5,4,]

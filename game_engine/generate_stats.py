@@ -5,20 +5,41 @@ import config
 from MCTS import run_monte_carlo
 import random 
 from agents import MCagent, random_agent, rotate_king_agent
-import numpy as np
 import time
 
+#exp1
+#agent1class = MCagent
+#agent2class = MCagent
+
+#"initial_random_games":1, "mc_n_iterations": 20, guided
+#args1 = [2, 30, True]
+#args2 = [2, 30, False]
+
+
+# exp2
 agent1class = MCagent
-agent1class = random_agent
 agent2class = rotate_king_agent
 
-
-args1 = [1, 5]
-args1 = []
+# initial_random_games":1, "mc_n_iterations": 20, guided
+args1 = [2, 100, True]
 args2 = []
 
 
-fname = time.time()
+# # exp3
+# agent1class = MCagent
+# agent2class = random_agent
+# 
+# # initial_random_games":1, "mc_n_iterations": 20, guided
+# args1 = [2, 100, True]
+# args2 = []
+
+
+
+
+
+print(agent1class, args1)
+print(agent2class, args2)
+
 
 # Game loop 
 if __name__ == "__main__":
@@ -62,7 +83,9 @@ if __name__ == "__main__":
         else: 
             results.append(-0.5)
         print(f"Results: {results}")
-        np.save(f"results_{agent1}{agent2}_{fname}.npy", results)
+
+        with open(f"results_{agent1}{agent2}.txt", "a") as f:
+            f.write(str(results[-1]) + "\n")
 
 print(results)
 #res_pd = pd.DataFrame(results)

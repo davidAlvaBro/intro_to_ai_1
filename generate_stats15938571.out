@@ -1,0 +1,59 @@
+
+------------------------------------------------------------
+Sender: LSF System <lsfadmin@hpc.dtu.dk>
+Subject: Job 15938571: <geneate_stats> in cluster <dcc> Exited
+
+Job <geneate_stats> was submitted from host <n-62-30-5> by user <s204111> in cluster <dcc> at Mon Mar 20 15:57:07 2023
+Job was executed on host(s) <2*n-62-29-8>, in queue <hpc>, as user <s204111> in cluster <dcc> at Mon Mar 20 15:57:09 2023
+</zhome/56/e/155505> was used as the home directory.
+</zhome/56/e/155505/Desktop/LaserChess/intro_to_ai_1> was used as the working directory.
+Started at Mon Mar 20 15:57:09 2023
+Terminated at Mon Mar 20 16:45:00 2023
+Results reported at Mon Mar 20 16:45:00 2023
+
+Your job looked like:
+
+------------------------------------------------------------
+# LSBATCH: User input
+#!/bin/sh
+#BSUB -J geneate_stats
+#BSUB -R "rusage[mem=2GB]"
+#BSUB -n 2
+#BSUB -R "span[hosts=1]" 
+#BSUB -o generate_stats%J.out
+#BSUB -e generate_stats%J.err
+#BSUB -W 23:00
+# -- end of LSF options --
+
+source env/bin/activate
+# module load python3/3.10.7
+# module load numpy/1.23.3-python-3.10.7-openblas-0.3.21
+
+python game_engine/generate_stats.py
+
+------------------------------------------------------------
+
+TERM_OWNER: job killed by owner.
+Exited with exit code 1.
+
+Resource usage summary:
+
+    CPU time :                                   2875.06 sec.
+    Max Memory :                                 65 MB
+    Average Memory :                             38.74 MB
+    Total Requested Memory :                     4096.00 MB
+    Delta Memory :                               4031.00 MB
+    Max Swap :                                   -
+    Max Processes :                              4
+    Max Threads :                                6
+    Run time :                                   2871 sec.
+    Turnaround time :                            2873 sec.
+
+The output (if any) is above this job summary.
+
+
+
+PS:
+
+Read file <generate_stats15938571.err> for stderr output of this job.
+
