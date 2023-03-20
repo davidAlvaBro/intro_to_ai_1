@@ -2,7 +2,7 @@
 import board as b
 import gui
 import config
-from MCTS import run_monte_carlo
+from ai.MCTS import run_monte_carlo
 
 
 # Game loop 

@@ -2,9 +2,9 @@
 import board as b
 import gui
 import config
-from MCTS import run_monte_carlo
+from ai.MCTS import run_monte_carlo
 import random 
-from simple_agent import simple_agent
+from ai.simple_agent import simple_agent
 
 
 # Game loop 
